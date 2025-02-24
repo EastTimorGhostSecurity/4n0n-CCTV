@@ -1,76 +1,19 @@
-#code by East Timor Ghost Security
-#!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+import base64, codecs, hashlib, os, sys
 
-import requests, re, colorama
-from requests.structures import CaseInsensitiveDict
-from colorama import Fore, Style
+encrypted_code = "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ybwvybwvyMUvybwvybwvyMGvybwvybwvybwvybwvyMGvybwvybwvyMUvybwvybwvyMRtVPQvybwvybwvyMUvybwvybwvybwvybwvybwvybwvyMGvyM0tVPNt4cnV4cnV4cJEVPQvybwvybwvybwvyMsvybwvybwvybwvybwvybwvybwvybwvyMUvybwvybwvyMRtVPQvybwvybwvyMUvybwvybwvybwvybwvybwvybwvybwvyMptVPQvybwvybwvyMRtVPQvybwvybwvybwvybwvybwvybwvybwvyMsvybwvybwvybwvybwvybwvyMptVBXJvBXJvBXIxFNtVPNtPyjjZmAoZGfmA23vybwvybwvyMGvyMQvyMQvyM0tVBXJvBXJvBXIyBXIxBXIxBXJvBXJvBXIxrXIzhXIxBXIxBXIxBXIxBXJvBXJvBXIxFNtVBXJvBXJvBXIxFNtVPNtVPNtVPQvybwvybwvyMRtVPQvybwvybwvyMUvybwvybwvyMUvyMevybwvybwvyMGvyM3vybwvybwvyMUvybwvybwvyMRtVPQvybwvybwvyMUvybwvybwvyMGvyMQvyMQvybwvybwvyMptVPNt4cnV4cnV4cJEVPNt4cnV4cnV4cJE4cnV4cnV4cJH4cJD4cJD4cnV4cnV4cJE4cnV4cnV4cJEVPNt4cnV4cnV4cJE4cJn4cJD4cJD4cJD4cJD4cnV4cnV4cJEVPNt4cnV4cnV4cJEVPNt4cJn4cJD4cJD4cJD4cJD4cnV4cnV4cJE4cnV4cnV4cJH4cJD4cJD4cJqVPQvybwvybwvyMRtVPNtVNcpZQZmJmR7ZmSg4cnV4cnV4cnV4cnV4cnV4cnV4cnV4cJK4cnV4cnV4cJEVPQvybwvybwvyMUvybwvybwvybwvybwvybwvybwvybwvyMRtVPQvybwvybwvyMRtVPNtVPNtVPNt4cnV4cnV4cJEVPNt4cnV4cnV4cJE4cnV4cnV4cJEVBXIzhXIxBXIaFQvybwvybwvyMUvyMevybwvybwvybwvybwvybwvybwvyMGvyM3vybwvybwvyMRtVBXJvBXJvBXIxFNtVPQvyMevybwvybwvybwvybwvybwvybwvyMGvyM3vybwvybwvyMRtVBXJvBXJvBXIxrXIzhXJvBXJvBXJvBXJvBXJvBXJvBXIyBXIarXJ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"
 
-colorama.init()
+decoded_base64 = codecs.decode(encrypted_code, "rot_13")
+decoded_code = base64.b64decode(decoded_base64).decode()
 
-url = "http://www.insecam.org/en/jsoncountries/"
+def check_integrity():
+    with open(sys.argv[0], "rb") as f:
+        file_hash = hashlib.sha256(f.read()).hexdigest()
+    return file_hash
 
-headers = CaseInsensitiveDict()
-headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
-headers["Cache-Control"] = "max-age=0"
-headers["Connection"] = "keep-alive"
-headers["Host"] = "www.insecam.org"
-headers["Upgrade-Insecure-Requests"] = "1"
-headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Gecko) Chrome/110.0.0.0 Safari/537.36"
+original_hash = check_integrity()
 
-resp = requests.get(url, headers=headers)
+exec(decoded_code)
 
-data = resp.json()
-countries = data['countries']
-
-print("""
-\033[1;33m███████╗ █████╗ ███████╗████████╗    ████████╗██╗███╗   ███╗ ██████╗ ██████╗      ██████╗ ██╗  ██╗ ██████╗ ███████╗████████╗███████╗███████╗ ██████╗
-\033[1;33m██╔════╝██╔══██╗██╔════╝╚══██╔══╝    ╚══██╔══╝██║████╗ ████║██╔═══██╗██╔══██╗    ██╔════╝ ██║  ██║██╔═══██╗██╔════╝╚══██╔══╝██╔════╝██╔════╝██╔════╝
-\033[1;37m█████╗  ███████║███████╗   ██║          ██║   ██║██╔████╔██║██║   ██║██████╔╝    ██║  ███╗███████║██║   ██║███████╗   ██║   ███████╗█████╗  ██║     
-\033[1;37m██╔══╝  ██╔══██║╚════██║   ██║          ██║   ██║██║╚██╔╝██║██║   ██║██╔══██╗    ██║   ██║██╔══██║██║   ██║╚════██║   ██║   ╚════██║██╔══╝  ██║     
-\033[1;31m███████╗██║  ██║███████║   ██║          ██║   ██║██║ ╚═╝ ██║╚██████╔╝██║  ██║    ╚██████╔╝██║  ██║╚██████╔╝███████║   ██║   ███████║███████╗╚██████╗
-\033[1;31m╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝          ╚═╝   ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝     ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝   ╚══════╝╚══════╝ ╚═════╝
-                                                                CODE BY Mr.Y
-\033[1;32m""")
-
-col_widths = {
-    "code": 6,
-    "country": 22
-}
-
-country_list = [
-    f'{Fore.CYAN}[{key}]{Style.RESET_ALL}  {Fore.LIGHTGREEN_EX}{value["country"]:<{col_widths["country"]}}{Style.RESET_ALL}'
-    for key, value in countries.items()
-]
-
-for i, country in enumerate(country_list, 1):
-    print(f'{country}', end='  ')
-    if i % 4 == 0:
-        print()
-
-if len(country_list) % 4 != 0:
-    print()
-
-try:
-    country = input(f"{Fore.CYAN}Country Code{Fore.YELLOW}[$]: {Style.RESET_ALL}")
-    res = requests.get(
-        f"http://www.insecam.org/en/bycountry/{country}", headers=headers
-    )
-    last_page = re.findall(r'pagenavigator\(\"\?page=\", (\d+)', res.text)[0]
-
-    for page in range(int(last_page)):
-        res = requests.get(
-            f"http://www.insecam.org/en/bycountry/{country}/?page={page}",
-            headers=headers
-        )
-        find_ip = re.findall(r"http://\d+.\d+.\d+.\d+:\d+", res.text)
-    
-        with open(f'{country}.txt', 'w') as f:
-          for ip in find_ip:
-              print(f"{Fore.RED}{ip}{Style.RESET_ALL}")
-              f.write(f'{ip}\n')
-except:
-    pass
-finally:
-    print(f"\n{Fore.GREEN}Save File : {Fore.YELLOW}{country}.txt{Style.RESET_ALL}")
-    exit()
+if check_integrity() != original_hash:
+    print("⚠️ KETA MODIFIKA BE'IK TE'EN...")
+    os.remove(sys.argv[0])
